@@ -1,0 +1,47 @@
+<LinearLayout xmlns:a="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  a:layout_width="match_parent"
+  a:layout_height="match_parent"
+  a:gravity="center"
+  a:orientation="vertical"
+  tools:context="com.bielu.geoquiz.QuizActivity" >
+
+  <TextView
+    a:id="@+id/question_text"
+    a:layout_width="wrap_content"
+    a:layout_height="wrap_content"
+    a:padding="24dp" />
+
+  <LinearLayout
+    a:layout_width="wrap_content"
+    a:layout_height="wrap_content"
+    a:orientation="horizontal" >
+
+    <Button
+      a:id="@+id/true_button"
+      style="@style/AppTheme"
+      a:layout_width="wrap_content"
+      a:layout_height="wrap_content"
+      a:text="@string/true_button" />
+
+    <Button
+      a:id="@+id/false_button"
+      style="@style/AppTheme"
+      a:layout_width="wrap_content"
+      a:layout_height="wrap_content"
+      a:text="@string/false_button" />
+  </LinearLayout>
+
+  <Button
+    a:id="@+id/cheat_button"
+    a:layout_width="wrap_content"
+    a:layout_height="wrap_content"
+    a:text="@string/cheat_button" />
+  
+  <Button
+    a:id="@+id/next_button"
+    a:layout_width="wrap_content"
+    a:layout_height="wrap_content"
+    a:text="@string/next_button" />
+
+</LinearLayout>
