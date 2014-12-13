@@ -3,16 +3,12 @@ package com.bielu.geoquiz;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.Socket;
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpUriRequest;
 
 import android.app.Activity;
@@ -59,7 +55,7 @@ public class QuizActivity extends Activity {
       @Override
       protected GeoData doInBackground(Void... params) {
         HttpClient client = AndroidHttpClient.newInstance(TAG);
-        HttpUriRequest request = new HttpHead("http://jbosswildfly-pbielicki.rhcloud.com/rest/geoIp/172.20.10.40");
+        HttpUriRequest request = new HttpGet("http://jbosswildfly-pbielicki.rhcloud.com/rest/geoIp/172.20.10.40");
         request.setHeader("Accept", "application/x-protobuf");
         try {
           HttpResponse response = client.execute(request);
