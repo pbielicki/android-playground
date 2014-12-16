@@ -1,8 +1,8 @@
 package com.bielu.geoquiz;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpEntity;
@@ -10,6 +10,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -25,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bielu.protobuf.GeoDataNano.GeoData;
+import com.sun.xml.fastinfoset.sax.SAXDocumentParser;
 
 public class QuizActivity extends Activity {
   
@@ -55,21 +61,45 @@ public class QuizActivity extends Activity {
       @Override
       protected GeoData doInBackground(Void... params) {
         HttpClient client = AndroidHttpClient.newInstance(TAG);
-        HttpUriRequest request = new HttpGet("http://jbosswildfly-pbielicki.rhcloud.com/rest/geoIp/172.20.10.40");
-        request.setHeader("Accept", "application/x-protobuf");
+        HttpUriRequest request = new HttpGet("http://playground-pbielicki.rhcloud.com/rest/geoIp/172.20.10.40");
+        request.setHeader("Accept", "application/xml+fastinfoset");
         try {
           HttpResponse response = client.execute(request);
           HttpEntity entity = response.getEntity();
           InputStream in = entity.getContent();
-          byte[] buf = new byte[512];
-          int bytesRead = 0;
-          ByteArrayOutputStream out = new ByteArrayOutputStream(512);
-          while ((bytesRead = in.read(buf)) != -1) {
-            out.write(buf, 0, bytesRead);
-          }
           
-          return GeoData.parseFrom(out.toByteArray());          
+          final GeoData data = new GeoData();
+          XMLReader saxReader = new SAXDocumentParser();
+          saxReader.setContentHandler(new DefaultHandler() {
+            @Override
+            public void startElement(String uri, String localName, String qName, Attributes attributes)
+                throws SAXException {
+              
+              for (int i = 0; i < attributes.getLength(); i++) {
+                switch (attributes.getLocalName(i).toLowerCase(Locale.ENGLISH)) {
+                  case "country":
+                    data.country = attributes.getValue(i);
+                    break;
+                  case "city":
+                    data.city = attributes.getValue(i);
+                    break;
+                  case "latitude":
+                    data.latitude = attributes.getValue(i);
+                    break;
+                  case "longitude":
+                    data.longitude = attributes.getValue(i);
+                    break;
+                }
+              }
+            }
+          });
+          
+          saxReader.parse(new InputSource(in));
+          
+          return data;          
         } catch (IOException e) {
+          Log.w(TAG, e);
+        } catch (SAXException e) {
           Log.w(TAG, e);
         } catch (RuntimeException e) {
           Log.e(TAG, "Error", e);
