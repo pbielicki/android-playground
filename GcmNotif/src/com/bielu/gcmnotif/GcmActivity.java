@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class GcmActivity extends Activity {
@@ -20,10 +21,11 @@ public class GcmActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
+    TextView text = (TextView) findViewById(R.id.text_view);
     if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS) {
-      Toast.makeText(this, "Play Services are available", Toast.LENGTH_SHORT).show();
+      text.setText("Play Services are available");
     } else {
-      Toast.makeText(this, "WARNING: Play Services are unavailable", Toast.LENGTH_SHORT).show();
+      text.setText("WARNING: Play Services are unavailable");
     }
   }
 
