@@ -1,0 +1,6 @@
+{ "data": {
+    "score": "5x1",
+    "time": "15:10"
+  },
+  "registration_ids": ["APA91bF82ShgqqPkznIe2SMPGP9guldoy2uaTVSoWzNmq_Ru9wspxPt_rqAHFfvl88o4su6lvC_7ccWm_q8DkXdXk4Fo-AtLRWdjI5Zy1WOhE_6PhxfPP0Csh-GRG9sBnA8lx0eqNJaGwjlELJTxyjbhz5ZyXwj-nw"]
+}
