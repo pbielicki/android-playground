@@ -1,9 +1,13 @@
 package com.bielu.gcmnotif;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -24,12 +28,14 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.StatusCreator;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class GcmActivity extends Activity {
 
   static final String TAG = "GcmActivity";
   private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+  private static final String PROPERTY_REGISTERED = "registred";
   private static final String PROPERTY_REG_ID = "registration_id";
   private static final String PROPERTY_APP_VERSION = "appVersion";
   private static final String SENDER_ID = "999191256818";
@@ -37,6 +43,7 @@ public class GcmActivity extends Activity {
   private Button mSubmitButton;
   private GoogleCloudMessaging gcm;
   private String regid;
+  private boolean registered = false;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -53,10 +60,12 @@ public class GcmActivity extends Activity {
       //TODO: check if registration on the server side was successful
       // if not, try to register every time we pass here
       regid = getRegistrationId(this);
+      registered = isRegisteredOnServer(this);
 
-      if (regid.isEmpty()) {
+      if (regid.isEmpty() || registered == false) {
         registerInBackground();
       }
+      
     } else {
       Log.i(TAG, "No valid Google Play Services APK found.");
     }
@@ -73,15 +82,19 @@ public class GcmActivity extends Activity {
       if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
         GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
       } else {
-        Log.i(TAG, "This device is not supported.");
+        Log.w(TAG, "This device is not supported.");
       }
       return false;
     }
     return true;
   }
+  
+  private boolean isRegisteredOnServer(Context context) {
+    return getPreferences(context).getBoolean(PROPERTY_REGISTERED, false);
+  }
 
   private String getRegistrationId(Context context) {
-    final SharedPreferences prefs = getGCMPreferences(context);
+    final SharedPreferences prefs = getPreferences(context);
     String registrationId = prefs.getString(PROPERTY_REG_ID, "");
     if (registrationId.isEmpty()) {
       Log.i(TAG, "Registration not found.");
@@ -96,6 +109,7 @@ public class GcmActivity extends Activity {
       Log.i(TAG, "App version changed.");
       return "";
     }
+    
     return registrationId;
   }
 
@@ -131,24 +145,42 @@ public class GcmActivity extends Activity {
       protected Void doInBackground(Void... params) {
         HttpClient client = AndroidHttpClient.newInstance("Android");
         HttpPost request = new HttpPost("http://playground-pbielicki.rhcloud.com/rest/register");
+        boolean registered = false;
         try {
           HttpEntity postData = new StringEntity("{\"" + PROPERTY_REG_ID + "\":\"" + regid + "\"}");
           request.setHeader("Content-Type", "application/json");
           request.setEntity(postData);
           HttpResponse response = client.execute(request);
-          // TODO: check the response
-          // if success add this to the preferences
-          //Log.i(response.getEntity().);
+          if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            response.getEntity().writeTo(out);
+            if (out.toString().contains("\"status\":\"unable") == false
+                && out.toString().contains("\"" + PROPERTY_REG_ID + "\":\"" + regid + "\"")) {
+              
+              registered = true;
+            }
+          } else {
+            Log.d(TAG, "Unable to register on the server: " + response.toString());
+          }
         } catch (IOException e) {
-          Log.e("Could not register on the server", e.getMessage(), e);
+          Log.e(TAG, "Could not register on the server", e);
         }
+        
+        storeRegisteredOnServerFlag(GcmActivity.this, registered);
         return null;
       }
     }.execute(null, null, null);
   }
+  
+  private void storeRegisteredOnServerFlag(Context context, boolean registered) {
+    final SharedPreferences prefs = getPreferences(context);
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean(PROPERTY_REGISTERED, registered);
+    editor.commit();
+  }
 
   private void storeRegistrationId(Context context, String regId) {
-    final SharedPreferences prefs = getGCMPreferences(context);
+    final SharedPreferences prefs = getPreferences(context);
     int appVersion = getAppVersion(context);
     Log.i(TAG, "Saving regId on app version " + appVersion);
     SharedPreferences.Editor editor = prefs.edit();
@@ -167,12 +199,7 @@ public class GcmActivity extends Activity {
     }
   }
 
-  /**
-   * @return Application's {@code SharedPreferences}.
-   */
-  private SharedPreferences getGCMPreferences(Context context) {
-    // This sample app persists the registration ID in shared preferences, but
-    // how you store the regID in your app is up to you.
+  private SharedPreferences getPreferences(Context context) {
     return getSharedPreferences(getClass().getSimpleName(), Context.MODE_PRIVATE);
   }
 
@@ -188,16 +215,12 @@ public class GcmActivity extends Activity {
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    // Inflate the menu; this adds items to the action bar if it is present.
     getMenuInflater().inflate(R.menu.gcm, menu);
     return true;
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
     if (id == R.id.action_settings) {
       return true;
