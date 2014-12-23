@@ -11,13 +11,14 @@ public class Crime {
   private boolean mSolved;
   
   public Crime() {
+    mDate = new Date();
+    mSolved = false;
   }
   
   public Crime(UUID id, String title) {
+    this();
     mId = id;
     mTitle = title;
-    mDate = new Date();
-    mSolved = false;
   }
 
   public UUID getId() {
