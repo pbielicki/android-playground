@@ -15,10 +15,11 @@ public class Crime {
     mSolved = false;
   }
   
-  public Crime(UUID id, String title) {
+  public Crime(UUID id, String title, boolean solved) {
     this();
     mId = id;
     mTitle = title;
+    mSolved = solved;
   }
 
   public UUID getId() {
@@ -51,5 +52,10 @@ public class Crime {
 
   public void setSolved(boolean solved) {
     mSolved = solved;
+  }
+  
+  @Override
+  public String toString() {
+    return mTitle;
   }
 }
