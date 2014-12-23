@@ -8,13 +8,10 @@ import android.content.Context;
 
 public class CrimeLab {
   
-  private Context mContext;
   private static CrimeLab mCrimeLab;
   private List<Crime> mCrimes;
 
   private CrimeLab(Context context) {
-    mContext = context;
-    
     mCrimes = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
       mCrimes.add(new Crime(UUID.randomUUID(), "Crime #" + i, i % 2 == 0));
