@@ -37,7 +37,7 @@ public class CrimeLab {
       }
     }
     
-    return null;
+    return new Crime(null, "error", false);
   }
 
 }
