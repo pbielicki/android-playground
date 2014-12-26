@@ -1,6 +1,6 @@
 package com.bielu.criminalintent;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 
 public class CrimeListActivity extends SingleFragmentActivity {
 

@@ -20,7 +20,6 @@
     android:layout_toLeftOf="@id/crime_list_item_solvedCheckBox"
     android:paddingLeft="4dp"
     android:paddingRight="4dp"
-    android:text="Crime title"
     android:textStyle="bold" />
 
   <TextView
@@ -31,7 +30,6 @@
     android:layout_toLeftOf="@id/crime_list_item_solvedCheckBox"
     android:paddingLeft="4dp"
     android:paddingRight="4dp"
-    android:paddingTop="4dp"
-    android:text="Crime date" />
+    android:paddingTop="4dp" />
 
 </RelativeLayout>
