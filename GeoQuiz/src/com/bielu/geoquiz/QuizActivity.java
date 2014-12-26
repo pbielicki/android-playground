@@ -61,7 +61,7 @@ public class QuizActivity extends Activity {
       @Override
       protected GeoData doInBackground(Void... params) {
         HttpClient client = AndroidHttpClient.newInstance(TAG);
-        HttpUriRequest request = new HttpGet("http://playground-pbielicki.rhcloud.com/rest/geoIp/172.20.10.40");
+        HttpUriRequest request = new HttpGet("http://playground.bielu.com/rest/geoIp");
         request.setHeader("Accept", "application/xml+fastinfoset");
         try {
           HttpResponse response = client.execute(request);
@@ -71,25 +71,47 @@ public class QuizActivity extends Activity {
           final GeoData data = new GeoData();
           XMLReader saxReader = new SAXDocumentParser();
           saxReader.setContentHandler(new DefaultHandler() {
+            Element elem = Element.UNKNOWN;
+            
             @Override
             public void startElement(String uri, String localName, String qName, Attributes attributes)
                 throws SAXException {
               
-              for (int i = 0; i < attributes.getLength(); i++) {
-                switch (attributes.getLocalName(i).toLowerCase(Locale.ENGLISH)) {
-                  case "country":
-                    data.country = attributes.getValue(i);
-                    break;
-                  case "city":
-                    data.city = attributes.getValue(i);
-                    break;
-                  case "latitude":
-                    data.latitude = attributes.getValue(i);
-                    break;
-                  case "longitude":
-                    data.longitude = attributes.getValue(i);
-                    break;
-                }
+              switch (localName.toLowerCase(Locale.ENGLISH)) {
+                case "country":
+                  elem = Element.COUNTRY;
+                  break;
+                case "city":
+                  elem = Element.CITY;
+                  break;
+                case "latitude":
+                  elem = Element.LATITUDE;
+                  break;
+                case "longitude":
+                  elem = Element.LONGITUDE;
+                  break;
+                default:
+                  elem = Element.UNKNOWN;
+              }
+            }
+            
+            @Override
+            public void characters(char[] ch, int start, int length) throws SAXException {
+              switch (elem) {
+                case COUNTRY:
+                  data.country = new String(ch, start, length);
+                  break;
+                case CITY:
+                  data.city = new String(ch, start, length);
+                  break;
+                case LONGITUDE:
+                  data.longitude = new String(ch, start, length);
+                  break;
+                case LATITUDE:
+                  data.latitude = new String(ch, start, length);
+                  break;
+                case UNKNOWN:
+                default:
               }
             }
           });
@@ -216,5 +238,13 @@ public class QuizActivity extends Activity {
       return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+  
+  static enum Element {
+    UNKNOWN,
+    COUNTRY,
+    CITY,
+    LATITUDE,
+    LONGITUDE;
   }
 }
