@@ -58,6 +58,17 @@ public class CrimeFragment extends Fragment {
     
     mDateButton = (Button) v.findViewById(R.id.crime_date);
     mDateButton.setText(mCrime.getDate().toString());
+    mDateButton.setOnLongClickListener(new View.OnLongClickListener() {
+      @Override
+      public boolean onLongClick(View v) {
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        TimePickerFragment dialog = TimePickerFragment.newInstance(mCrime.getDate());
+        dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+        dialog.show(fm, DIALOG_DATE);
+        return true;
+      }
+    });
+    
     mDateButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
