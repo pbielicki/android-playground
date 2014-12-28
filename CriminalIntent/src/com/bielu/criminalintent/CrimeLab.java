@@ -52,10 +52,14 @@ public class CrimeLab {
             }
             in.close();
             CrimeList list = com.bielu.criminalintent.protobuf.Crimes.CrimeList.parseFrom(out.toByteArray());
+            int i = 0;
             for (com.bielu.criminalintent.protobuf.Crimes.CrimeList.Crime c : list.crimes) {
               Crime crime = new Crime(UUID.fromString(c.uuid), c.title, c.solved);
               crime.setDate(format.parse(c.date));
               result.add(crime);
+              if (i++ > 2) {
+                break;
+              }
             }
           } catch (IOException | ParseException e) {
             Log.e(TAG, "Unable to parse response", e);
@@ -88,6 +92,10 @@ public class CrimeLab {
     }
     
     return new Crime(null, "error", false);
+  }
+
+  public void addCrime(Crime crime) {
+    mCrimes.add(crime);
   }
 
 }

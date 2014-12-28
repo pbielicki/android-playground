@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -30,7 +31,7 @@ public class DatePickerFragment extends DialogFragment {
   }
 
 
-  @Override
+  @SuppressLint("InflateParams") @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     mDate = (Date) getArguments().getSerializable(EXTRA_DATE);
     Calendar cal = Calendar.getInstance();
