@@ -13,35 +13,42 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-
-import com.bielu.criminalintent.protobuf.Crimes.CrimeList;
+import org.apache.http.entity.ByteArrayEntity;
 
 import android.content.Context;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.bielu.criminalintent.protobuf.Crimes.CrimeList;
+import com.google.protobuf.nano.MessageNano;
+
 public class CrimeLab {
   
+  private static final String APPLICATION_X_PROTOBUF = "application/x-protobuf";
+  private static final String HTTP_CRIME_URL = "http://playground.bielu.com/rest/crime";
   private static final String TAG = "CriminalIntent";
   private static CrimeLab mCrimeLab;
   private List<Crime> mCrimes;
+  private AndroidHttpClient mHttpClient;
+  private SimpleDateFormat mDateFormat;
 
   private CrimeLab(Context context) {
+    mHttpClient = AndroidHttpClient.newInstance(TAG);
+    mDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
     try {
-      final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
       mCrimes = new AsyncTask<Void, Void, List<Crime>>() {
         @Override
         protected List<Crime> doInBackground(Void... params) {
           List<Crime> result = new ArrayList<>();
-          HttpClient client = AndroidHttpClient.newInstance(TAG);
-          HttpUriRequest request = new HttpGet("http://playground.bielu.com/rest/crime");
-          request.setHeader("Accept", "application/x-protobuf");
+          HttpUriRequest request = new HttpGet(HTTP_CRIME_URL);
+          request.setHeader("Accept", APPLICATION_X_PROTOBUF);
           try {
-            HttpResponse response = client.execute(request);
+            HttpResponse response = mHttpClient.execute(request);
             HttpEntity entity = response.getEntity();
             InputStream in = entity.getContent();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -51,11 +58,12 @@ public class CrimeLab {
               out.write(b, 0, count);
             }
             in.close();
+            
             CrimeList list = com.bielu.criminalintent.protobuf.Crimes.CrimeList.parseFrom(out.toByteArray());
             int i = 0;
             for (com.bielu.criminalintent.protobuf.Crimes.CrimeList.Crime c : list.crimes) {
               Crime crime = new Crime(UUID.fromString(c.uuid), c.title, c.solved);
-              crime.setDate(format.parse(c.date));
+              crime.setDate(mDateFormat.parse(c.date));
               result.add(crime);
               if (i++ > 2) {
                 break;
@@ -94,8 +102,31 @@ public class CrimeLab {
     return new Crime(null, "error", false);
   }
 
-  public void addCrime(Crime crime) {
+  public void addCrime(final Crime crime) {
     mCrimes.add(crime);
+    new AsyncTask<Void, Void, Void>() {
+      @Override
+      protected Void doInBackground(Void... params) {
+        HttpPost request = new HttpPost(HTTP_CRIME_URL);
+        request.setHeader("Accept", APPLICATION_X_PROTOBUF);
+        request.setHeader("Content-Type", APPLICATION_X_PROTOBUF);
+        CrimeList.Crime c = new CrimeList.Crime();
+        c.date = mDateFormat.format(crime.getDate());
+        c.title = crime.getTitle();
+        c.solved = crime.isSolved();
+        c.uuid = crime.getId().toString();
+        request.setEntity(new ByteArrayEntity(MessageNano.toByteArray(c)));
+        try {
+          HttpResponse response = mHttpClient.execute(request);
+          if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
+            // do something?
+          }
+        } catch (IOException e) {
+          Log.e(TAG, "Unable to parse response", e);
+        }
+        return null;
+      }
+    }.execute(null, null);
   }
 
 }
