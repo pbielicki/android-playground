@@ -4,8 +4,10 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 public class CrimeListFragment extends ListFragment {
 
   private List<Crime> mCrimes;
+  private boolean mSubtitleVisible;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -29,6 +32,22 @@ public class CrimeListFragment extends ListFragment {
 
     ArrayAdapter<Crime> adapter = new CrimeAdapter(mCrimes);
     setListAdapter(adapter);
+    setRetainInstance(true);
+    mSubtitleVisible = false;
+  }
+  
+  @Override
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    //View v = super.onCreateView(inflater, container, savedInstanceState);
+    
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && mSubtitleVisible) {
+      getActivity().getActionBar().setSubtitle(R.string.subtitle);
+    }
+
+    View v = inflater.inflate(R.layout.fragment_empty_list, container, false);
+    //getListView().setEmptyView(empty);
+    
+    return v;
   }
   
   @Override
@@ -49,6 +68,10 @@ public class CrimeListFragment extends ListFragment {
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     inflater.inflate(R.menu.fragment_crime_list, menu);
+    MenuItem showSubtitleButton = menu.findItem(R.id.menu_item_show_subtitle);
+    if (showSubtitleButton != null && mSubtitleVisible) {
+      showSubtitleButton.setTitle(R.string.hide_subtitle);
+    }
   }
   
   @Override
@@ -63,12 +86,14 @@ public class CrimeListFragment extends ListFragment {
         return true;
         
       case R.id.menu_item_show_subtitle:
-        if (getActivity().getActionBar().getSubtitle() == null) {
+        if (mSubtitleVisible == false) {
           getActivity().getActionBar().setSubtitle(R.string.subtitle);
           item.setTitle(R.string.hide_subtitle);
+          mSubtitleVisible = true;
         } else {
           getActivity().getActionBar().setSubtitle(null);
           item.setTitle(R.string.show_subtitle);
+          mSubtitleVisible = false;
         }
         
         return true;

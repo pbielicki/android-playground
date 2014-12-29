@@ -14,5 +14,6 @@
   <string name="show_subtitle">Show subtitle</string>
   <string name="hide_subtitle">Hide subtitle</string>
   <string name="subtitle">Subtitle</string>
+  <string name="no_crimes">There are no crimes.</string>
   
 </resources>
