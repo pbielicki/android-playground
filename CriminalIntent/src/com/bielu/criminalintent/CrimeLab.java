@@ -30,7 +30,7 @@ import com.google.protobuf.nano.MessageNano;
 public class CrimeLab {
   
   private static final String APPLICATION_X_PROTOBUF = "application/x-protobuf";
-  private static final String HTTP_CRIME_URL = "http://playground.bielu.com/rest/crime";
+  private static final String HTTP_CRIME_URL = "https://playground.bielu.com/rest/crime";
   private static final String TAG = "CriminalIntent";
   private static CrimeLab mCrimeLab;
   private List<Crime> mCrimes;
@@ -112,7 +112,7 @@ public class CrimeLab {
         request.setHeader("Content-Type", APPLICATION_X_PROTOBUF);
         CrimeList.Crime c = new CrimeList.Crime();
         c.date = mDateFormat.format(crime.getDate());
-        c.title = crime.getTitle();
+        c.title = crime.getTitle() == null ? "" : crime.getTitle();
         c.solved = crime.isSolved();
         c.uuid = crime.getId().toString();
         request.setEntity(new ByteArrayEntity(MessageNano.toByteArray(c)));
@@ -129,4 +129,7 @@ public class CrimeLab {
     }.execute(null, null);
   }
 
+  public void deleteCrime(Crime crime) {
+    mCrimes.remove(crime);
+  }
 }
