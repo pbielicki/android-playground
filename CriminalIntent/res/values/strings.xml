@@ -15,5 +15,9 @@
   <string name="hide_subtitle">Hide subtitle</string>
   <string name="subtitle">Subtitle</string>
   <string name="no_crimes">There are no crimes.</string>
+  <string name="user_label">Username</string>
+  <string name="user_hint">Enter username to access remote Crime service</string>
+  <string name="password_label">Password</string>
+  <string name="credentials_title">Crime service credentials:</string>
   
 </resources>
