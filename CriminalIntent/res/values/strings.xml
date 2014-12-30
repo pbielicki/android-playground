@@ -19,5 +19,6 @@
   <string name="user_hint">Enter username to access remote Crime service</string>
   <string name="password_label">Password</string>
   <string name="credentials_title">Crime service credentials:</string>
+  <string name="delete_crime">Delete crime</string>
   
 </resources>
